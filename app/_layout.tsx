@@ -1,39 +1,77 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import { Stack } from "expo-router";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import SafeScreen from "../components/SafeScreen";
+import { StatusBar } from "expo-status-bar";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const { usuario, inicializarSesion, loading } = useAuthStore();
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    inicializarSesion();
+  }, []);
 
-  if (!loaded) {
-    return null;
+  if (loading) {
+    return (
+      <SafeAreaProvider>
+        <SafeScreen>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#007AFF" />
+          </View>
+        </SafeScreen>
+        <StatusBar style="dark" />
+      </SafeAreaProvider>
+    );
   }
 
+  // Si no hay sesión iniciada
+  if (!usuario) {
+    return (
+      <SafeAreaProvider>
+        <SafeScreen>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+          </Stack>
+        </SafeScreen>
+        <StatusBar style="dark" />
+      </SafeAreaProvider>
+    );
+  }
+
+  // Definir las pantallas según rol
+  const roleScreens: Record<string, string> = {
+    client: "(client)",
+    driver: "(driver)",
+    admin: "(admin)"
+  };
+
+  const stackName = roleScreens[usuario.rol];
+
+  // Si el rol no está mapeado, redirige al auth
+  if (!stackName) {
+    return (
+      <SafeAreaProvider>
+        <SafeScreen>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+          </Stack>
+        </SafeScreen>
+        <StatusBar style="dark" />
+      </SafeAreaProvider>
+    );
+  }
+
+  // Si todo está bien, renderizar el stack correspondiente
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <SafeScreen>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name={stackName} />
+        </Stack>
+      </SafeScreen>
+      <StatusBar style="dark" />
+    </SafeAreaProvider>
   );
 }

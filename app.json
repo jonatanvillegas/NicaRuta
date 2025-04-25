@@ -15,6 +15,12 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "package": "com.jonathan6942.nicaruta",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCzfrTGvu9I2qWl-4QrevniiIiz6hLN5jE"
+        }
       }
     },
     "web": {
@@ -36,6 +42,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "0463f734-c2a1-4971-a160-b34ad9470ba7"
+      }
+    },
+    "owner": "jonathan6942"
   }
 }
